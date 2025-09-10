@@ -6,11 +6,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const GROQ_KEY = "gsk_xxx..."; // apna real Groq API key yaha rakho (server-side safe)
+// Best practice: API key environment variable me rakho
+const GROQ_KEY = process.env.GROQ_API_KEY || "gsk_xxx..."; // fallback optional
 
 app.post("/api/groq", async (req, res) => {
   try {
     const { model, messages, max_tokens, temperature } = req.body;
+
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {

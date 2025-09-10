@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quiz App — Hindi | Created by Rixie</title>
+  <style>
+    :root{
+      --bg:#0f1724; --card:#0b1220; --muted:#94a3b8; --accent:#06b6d4; --success:#16a34a; --danger:#ef4444;
+      --glass: rgba(255,255,255,0.03);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,#031026 0%, #071426 60%);color:#e6eef6}
+    .container{max-width:980px;margin:28px auto;padding:22px}
+    .top {display:flex;gap:16px;align-items:center;justify-content:space-between}
+    .brand {display:flex;gap:14px;align-items:center}
+    .logo {width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#06b6d4,#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:700;color:#021124}
+  h1{margin:0;font-size:24px;letter-spacing:1px;}
+    p.lead{color:var(--muted);margin:4px 0 0}
+    .card{background:var(--card);border-radius:14px;padding:18px;margin-top:18px;box-shadow:0 6px 20px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
+    .center{display:flex;align-items:center;justify-content:center}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-top:12px}
+    button.btn{background:var(--glass);color:#e6eef6;border:1px solid rgba(255,255,255,0.04);padding:10px 12px;border-radius:10px;font-size:15px;cursor:pointer}
+    button.btn.primary{background:linear-gradient(90deg,var(--accent),#7c3aed);color:#021124;font-weight:600;border:none}
+    button.btn.ghost{background:transparent;border:1px dashed rgba(255,255,255,0.05);color:var(--muted)}
+    .subject-btn{display:flex;flex-direction:column;align-items:flex-start;padding:12px}
+    .muted{color:var(--muted);font-size:13px}
+    .question-area{margin-top:18px}
+    .qbox{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:16px;border-radius:12px}
+    .qnum{font-weight:700;color:var(--accent)}
+    .qtxt{margin-top:8px;font-size:18px;line-height:1.4}
+    .options{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .opt{padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.01);cursor:pointer;font-weight:600}
+    .opt.correct{background:rgba(22,163,74,0.12);border-color:rgba(22,163,74,0.35)}
+    .opt.wrong{background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.3)}
+    .footer{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:12px}
+  .rixie-footer{margin-top:32px;text-align:center;color:#7c3aed;font-weight:700;font-size:16px;letter-spacing:1px;}
+    .small{font-size:13px;color:var(--muted)}
+    .score{font-weight:700;color:#fff}
+    .settings{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+    input[type="text"], input[type="url"]{background:transparent;border:1px solid rgba(255,255,255,0.05);padding:10px;border-radius:8px;color:#e6eef6;min-width:280px}
+    .note{font-size:13px;color:var(--muted);margin-top:8px}
+    .hidden{display:none}
+    .kbd{background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:6px;font-weight:600}
+    @media(max-width:640px){.options{grid-template-columns:1fr} .brand h1{font-size:16px}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="top">
+      <div class="brand">
+        <div class="logo">QZ</div>
+        <div>
+          <h1>Quiz App (Hindi)</h1>
+          <p class="lead">MCQ प्रश्न — प्रतियोगी परीक्षा के लिए।</p>
+        </div>
+      </div>
+      <div>
+        <button id="openSettings" class="btn ghost">सेटिंग्स</button>
+      </div>
+    </div>
+
+    <div class="card" id="introCard">
+      <h3>परिचय</h3>
+      <p class="muted">यह पेज हिंदी में प्रतियोगी परीक्षा के लिए MCQ प्रश्न प्रस्तुत करता है। नीचे <b>Start</b> दबाएँ, विषय चुनें, और क्विज शुरू करें। हर सवाल तुरंत मिलेगा — आप उत्तर दें, सही/गलत देखें और अगला सवाल पाएँ।</p>
+      <div style="margin-top:14px" class="center">
+        <button id="startBtn" class="btn primary">Start Quiz</button>
+      </div>
+    </div>
+
+    <div class="card hidden" id="setupCard">
+  <h3>चरण 1 — विषय चुनें</h3>
+      <div class="grid" id="subjectsGrid"></div>
+
+  <h3 style="margin-top:16px">चरण 2 — कितने सवाल (25 / 50 / 100 / 200)</h3>
+      <div style="display:flex;gap:10px;margin-top:8px">
+        <button class="btn" data-count="25">25</button>
+        <button class="btn" data-count="50">50</button>
+        <button class="btn" data-count="100">100</button>
+        <button class="btn" data-count="200">200</button>
+      </div>
+      <div style="margin-top:12px" class="center">
+        <button id="beginTest" class="btn primary">शुरू करें</button>
+      </div>
+      <div style="margin-top:12px" class="small muted">आप कभी भी <span class="kbd">रोकें</span> दबाकर क्विज रोक सकते हैं और स्कोर देख सकते हैं।</div>
+    </div>
+
+    <div class="card hidden" id="testCard">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div>
+          <div class="small muted">विषय: <span id="selSubject"></span></div>
+          <div class="small muted">प्रगति: <span id="progressText">0/0</span></div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div class="score">स्कोर: <span id="score">0</span></div>
+          <button id="stopTest" class="btn ghost">रोकें</button>
+        </div>
+      </div>
+
+      <div class="question-area">
+        <div class="qbox" id="qbox">
+          <div class="qnum" id="qnum">Q1</div>
+          <div class="qtxt" id="qtxt">Press Begin to start</div>
+          <div class="options" id="options"></div>
+        </div>
+      </div>
+
+      <div class="footer">
+        <div class="small muted" id="statusMsg">Ready</div>
+        <div>
+          <button id="prevBtn" class="btn">Previous</button>
+          <button id="nextBtn" class="btn primary">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card hidden" id="endCard">
+      <h3>क्विज पूरा हुआ</h3>
+      <p id="finalText" class="muted">स्कोर</p>
+      <div style="margin-top:12px" class="center">
+        <button id="restartBtn" class="btn primary">फिर से शुरू करें</button>
+      </div>
+    </div>
+
+    <div class="card hidden" id="settingsCard">
+  <h3>सेटिंग्स</h3>
+      <div class="settings">
+        <div>
+          <label class="small muted">API Proxy URL (optional)</label><br/>
+          <input id="proxyUrl" type="url" placeholder="https://your-server.com/api/quiz" />
+          <div class="note">यदि आपने server-side proxy बनाया है तो उसका endpoint यहाँ डालें.</div>
+        </div>
+        <div>
+          <label class="small muted">API Key (browser mode — optional)</label><br/>
+          <input id="apiKey" type="text" placeholder="key_xxx..." />
+          <div class="note">Direct browser mode exposes key in client. Proxy recommended.</div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;display:flex;gap:8px">
+  <button id="saveSettings" class="btn primary">सेव करें</button>
+  <button id="closeSettings" class="btn ghost">बंद करें</button>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+/* =======================
+  Quiz App Frontend (single-file)
+  - Hindi UI, subjects, counts
+  - Created by Rixie
+  ======================= */
+
+(() => {
+  // ----- Config & state -----
+  const SUBJECTS = [
+  "राजनीति विज्ञान",
+  "सामान्य ज्ञान",
+  "इतिहास",
+  "भूगोल",
+  "विज्ञान",
+  "कम्प्यूटर",
+  "कर्रेंट अफेयर्स",
+  "गणित",
+  "रीज़निंग",
+  "संस्कृति"
+  ];
+
+  // DOM refs
+  const introCard = document.getElementById('introCard');
+  const setupCard = document.getElementById('setupCard');
+  const testCard = document.getElementById('testCard');
+  const endCard = document.getElementById('endCard');
+  const settingsCard = document.getElementById('settingsCard');
+
+  const startBtn = document.getElementById('startBtn');
+  const subjectsGrid = document.getElementById('subjectsGrid');
+  const beginTest = document.getElementById('beginTest');
+  const stopTest = document.getElementById('stopTest');
+  const qnum = document.getElementById('qnum');
+  const qtxt = document.getElementById('qtxt');
+  const optionsDiv = document.getElementById('options');
+  const scoreEl = document.getElementById('score');
+  const progressText = document.getElementById('progressText');
+  const statusMsg = document.getElementById('statusMsg');
+  const finalText = document.getElementById('finalText');
+  const restartBtn = document.getElementById('restartBtn');
+
+  const saveSettings = document.getElementById('saveSettings');
+  const closeSettings = document.getElementById('closeSettings');
+  const openSettings = document.getElementById('openSettings');
+  const proxyUrlInput = document.getElementById('proxyUrl');
+  const apiKeyInput = document.getElementById('apiKey');
+
+  // Local stored settings
+  const STORAGE_KEY = 'mocktest_settings_v1';
+  let settings = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+  if (!settings.proxyUrl) settings.proxyUrl = '';
+  if (!settings.apiKey) settings.apiKey = '';
+
+  proxyUrlInput.value = settings.proxyUrl || '';
+  apiKeyInput.value = settings.apiKey || '';
+
+  // state of current test
+  let state = {
+    subject: null,
+    total: 0,
+    currentIndex: 0,   // 0-based
+    score: 0,
+    questionCache: [], // we will store fetched questions if we want
+    lastQuestionRaw: null,
+    running: false
+  };
+
+  // Groq model / prompt
+  const QUIZ_MODEL = 'llama-3.1-8b-instant'; // default
+
+  // system + user prompt builder
+  function buildPromptForOneQuestion(subject) {
+    // instruct model to return strict JSON - qtext, options array (4 strings), correct (A/B/C/D)
+    const system = "आप एक expert प्रश्न जनरेटर हैं — भारतीय competitive exams (SSC/NTPC/Banking/Railway) के अनुरूप। उत्तर हिंदी में दें।";
+    const user = `एक विषय '${subject}' के लिए हिंदी में 1 multiple-choice question (MCQ) बनाएं।
+सिर्फ JSON array लौटाएँ। हर element में ये keys हों:
+qtext (string) - पूरा प्रश्न,
+options (array of 4 strings) - विकल्प A,B,C,D,
+correct (single char 'A'|'B'|'C'|'D') - सही विकल्प का अक्षर.
+कोई explanation या extra text न दें। सवाल exam-oriented और non-trivial हो।`;
+    return {system, user};
+  }
+
+  // Utility: show/hide
+  function show(el) {
+    el.classList.remove('hidden');
+  }
+  function hide(el) {
+    el.classList.add('hidden');
+  }
+
+  // populate subject buttons
+  function renderSubjects() {
+    subjectsGrid.innerHTML = '';
+    SUBJECTS.forEach(s => {
+      const btn = document.createElement('button');
+      btn.className = 'btn subject-btn';
+      btn.innerHTML = `<div style="font-weight:700">${s}</div><div class="muted" style="margin-top:6px">Competitive exam important questions</div>`;
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.subject-btn').forEach(x=>x.classList.remove('primary'));
+        btn.classList.add('primary');
+        state.subject = s;
+      });
+      subjectsGrid.appendChild(btn);
+    });
+  }
+
+  // Settings handlers
+  openSettings.addEventListener('click', () => {
+    hide(introCard); hide(setupCard); hide(testCard); hide(endCard);
+    show(settingsCard);
+  });
+  closeSettings.addEventListener('click', () => {
+    hide(settingsCard);
+    show(introCard);
+  });
+  saveSettings.addEventListener('click', () => {
+    settings.proxyUrl = proxyUrlInput.value.trim();
+    settings.apiKey = apiKeyInput.value.trim();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    alert('Settings saved.');
+  });
+
+  // start button
+  startBtn.addEventListener('click', () => {
+    hide(introCard);
+    renderSubjects();
+    show(setupCard);
+  });
+
+  // count selection
+  let chosenCount = 25;
+  setupCard.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-count]');
+    if (!btn) return;
+    chosenCount = parseInt(btn.dataset.count,10) || 25;
+    // highlight visually
+    setupCard.querySelectorAll('button[data-count]').forEach(b=>b.classList.remove('primary'));
+    btn.classList.add('primary');
+  });
+
+  // begin test
+  beginTest.addEventListener('click', async () => {
+    if (!state.subject) { alert('कृपया पहले विषय चुनें'); return; }
+    state.total = chosenCount || 25;
+    state.currentIndex = 0;
+    state.score = 0;
+    state.running = true;
+    state.questionCache = [];
+    state.lastQuestionRaw = null;
+
+    // Save current settings
+    settings.proxyUrl = proxyUrlInput.value.trim();
+    settings.apiKey = apiKeyInput.value.trim();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+
+    hide(setupCard);
+    show(testCard);
+    document.getElementById('selSubject').innerText = state.subject;
+    updateProgress();
+    await fetchAndShowNextQuestion(); // get first question
+  });
+
+  // Stop test
+  stopTest.addEventListener('click', () => {
+    stopTheTest('User stopped the test.');
+  });
+
+  restartBtn.addEventListener('click', () => {
+    // reset to intro
+    hide(endCard);
+    show(introCard);
+    state = {subject:null,total:0,currentIndex:0,score:0,questionCache:[],lastQuestionRaw:null,running:false};
+  });
+
+  // next/prev buttons (next not required by flow but keep for manual)
+  document.getElementById('nextBtn').addEventListener('click', async () => {
+    if (!state.running) return;
+    // If current question still unanswered, we don't auto move; but allow skip for manual
+    state.currentIndex++;
+    if (state.currentIndex >= state.total) return finishTest();
+    updateProgress();
+    await fetchAndShowNextQuestion();
+  });
+  document.getElementById('prevBtn').addEventListener('click', () => {
+    if (state.currentIndex > 0) {
+      state.currentIndex--;
+      updateProgress();
+      // show cached question if exists
+      showCachedQuestion(state.currentIndex);
+    }
+  });
+
+  // update progress & score UI
+  function updateProgress() {
+    progressText.innerText = `${Math.min(state.currentIndex+1, state.total)}/${state.total}`;
+    scoreEl.innerText = state.score;
+  }
+
+  // finish
+  function finishTest() {
+    state.running = false;
+    hide(testCard);
+    show(endCard);
+    finalText.innerHTML = `<strong>आपका स्कोर: ${state.score} / ${state.total}</strong><div class="muted" style="margin-top:8px">आइए फिर से प्रैक्टिस करें या विषय बदलें।</div>`;
+  }
+
+  // stop
+  function stopTheTest(note){
+    state.running = false;
+    hide(testCard);
+    show(endCard);
+    finalText.innerHTML = `<strong>टेस्ट रोका गया</strong><div class="muted" style="margin-top:8px">${note}<br/> स्कोर: ${state.score} / ${state.currentIndex}</div>`;
+  }
+
+  // show cached question if available
+  function showCachedQuestion(idx){
+    const q = state.questionCache[idx];
+    if (!q) { qtxt.innerText = 'Question not loaded'; optionsDiv.innerHTML=''; return; }
+    qnum.innerText = `Q${idx+1}`;
+    qtxt.innerText = q.qtext;
+    renderOptions(q.options, idx, q.correct);
+    updateProgress();
+  }
+
+  // render options (buttons)
+  function renderOptions(options, qIndex, correctLetter){
+    optionsDiv.innerHTML = '';
+    // format options might already include A., B. — strip leading A. etc
+    options = options.map(opt => (opt || '').replace(/^[A-D]\.?\s*/i,'').trim());
+    // create A-D mapping
+    const letters = ['A','B','C','D'];
+    for (let i=0;i<4;i++){
+      const letter = letters[i];
+      const btn = document.createElement('div');
+      btn.className = 'opt';
+      btn.innerText = `${letter}. ${options[i] || '—'}`;
+      btn.dataset.choice = letter;
+      btn.addEventListener('click', async () => {
+        // disable clicking until response processed
+        if (!state.running) return;
+        // lock options
+        Array.from(optionsDiv.children).forEach(x=>x.style.pointerEvents='none');
+        // check correctness
+        const isCorrect = (letter === correctLetter);
+        if (isCorrect) {
+          btn.classList.add('correct');
+          statusMsg.innerText = 'सही ✅';
+        } else {
+          btn.classList.add('wrong');
+          statusMsg.innerText = `गलत ❌ सही: ${correctLetter}`;
+          // highlight correct option visually
+          const idxCorrect = letters.indexOf(correctLetter);
+          if (idxCorrect>=0 && optionsDiv.children[idxCorrect]) {
+            optionsDiv.children[idxCorrect].classList.add('correct');
+          }
+        }
+        // update score and index
+        if (isCorrect) state.score++;
+        // store answer in cache if needed
+        state.questionCache[state.currentIndex].userAnswer = letter;
+        updateProgress();
+
+        // short delay then next
+        await new Promise(r=>setTimeout(r, 900));
+        state.currentIndex++;
+        if (state.currentIndex >= state.total) {
+          finishTest();
+          return;
+        }
+        updateProgress();
+        await fetchAndShowNextQuestion();
+      });
+      optionsDiv.appendChild(btn);
+    }
+  }
+
+  // Fetch one question from Groq (via proxy or direct)
+  async function fetchOneQuestion(subject) {
+    statusMsg.innerText = 'प्रश्न लाया जा रहा है...';
+    // Build system/user
+    const {system, user} = buildPromptForOneQuestion(subject);
+
+    // choose mode: proxy if proxyUrl set, else direct (requires apiKey)
+    const proxyUrl = settings.proxyUrl || '';
+    const directKey = settings.apiKey || '';
+
+    try {
+      if (proxyUrl) {
+        // POST to proxy. Proxy should accept JSON and return raw text content (or directly JSON array)
+        const body = { model: QUIZ_MODEL, messages: [{role:'system', content: system}, {role:'user', content: user}], max_tokens:1200, temperature:0.3 };
+        const res = await fetch(proxyUrl, {
+          method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+        });
+        if (!res.ok) { throw new Error('Proxy error: ' + res.status); }
+        const text = await res.text();
+        return parseGroqResponse(text);
+      } else {
+        // direct browser call to API with provided key
+        if (!directKey) throw new Error('No API key provided (in Settings).');
+        const payload = {
+          model: QUIZ_MODEL,
+          messages: [{role:'system', content: system}, {role:'user', content: user}],
+          max_tokens:1200,
+          temperature:0.3
+        };
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method:'POST',
+          headers: {
+            'Content-Type':'application/json',
+            'Authorization': 'Bearer ' + directKey
+          },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) {
+          const txt = await res.text();
+          throw new Error('API HTTP ' + res.status + ' — ' + txt.slice(0,400));
+        }
+        const data = await res.json();
+        // try to get message text
+        let raw = '';
+        if (data.choices && data.choices[0]) {
+          if (data.choices[0].message && data.choices[0].message.content) raw = data.choices[0].message.content;
+          else raw = JSON.stringify(data.choices[0]);
+        } else {
+          raw = JSON.stringify(data).slice(0,1000);
+        }
+        return parseGroqResponse(raw);
+      }
+    } catch(err) {
+      console.error('Fetch error', err);
+      statusMsg.innerText = 'सवाल लाने में त्रुटि: ' + (err.message || err);
+      return null;
+    }
+  }
+
+  // parse Groq response robustly
+  function parseGroqResponse(rawText) {
+    if (!rawText) return null;
+    // common patterns: JSON array string, or array of single-quoted strings, or code block
+    let t = rawText.trim();
+    // strip markdown fences
+    t = t.replace(/^```[a-zA-Z]*\n?/, '').replace(/```$/, '');
+    // If it's already valid JSON
+    try { const j = JSON.parse(t); return normalizeQuestionFromJson(j); } catch(e){}
+    // Replace single quotes with double, but care: if text contains contractions etc this might break — still attempt
+    try {
+      const fixed = t.replace(/(\r\n|\n)/g,' ').replace(/'/g, '"');
+      const j = JSON.parse(fixed);
+      return normalizeQuestionFromJson(j);
+    } catch(e){}
+    // try to extract first array-like substring
+    const m = t.match(/\[.*\]/s);
+    if (m) {
+      try {
+        const s = m[0].replace(/'/g,'"');
+        const j = JSON.parse(s);
+        return normalizeQuestionFromJson(j);
+      } catch(e){}
+    }
+    // try to find a single object-like substring
+    const m2 = t.match(/\{[^]*\}/);
+    if (m2) {
+      try {
+        const s = m2[0].replace(/'/g,'"');
+        const j = JSON.parse(s);
+        return normalizeQuestionFromJson([j]);
+      } catch(e){}
+    }
+    // if nothing works, return null
+    return null;
+  }
+
+  // normalize JSON -> single question object
+  function normalizeQuestionFromJson(parsed) {
+    // parsed could be array of objects or array of strings (each a representation) — try multiple ways
+    if (Array.isArray(parsed)) {
+      // first element could be a stringified object
+      const first = parsed[0];
+      if (!first) return null;
+      if (typeof first === 'string') {
+        // attempt to parse each array item as object
+        try {
+          const objs = parsed.map(s => JSON.parse(s.replace(/'/g,'"')));
+          return extractFromObj(objs[0]);
+        } catch(e){}
+      } else if (typeof first === 'object') {
+        return extractFromObj(first);
+      }
+    } else if (typeof parsed === 'object') {
+      return extractFromObj(parsed);
+    }
+    return null;
+
+    function extractFromObj(obj) {
+      // possible keys: qtext, options, correct
+      if (obj.qtext && obj.options && obj.options.length === 4 && obj.correct) {
+        return {
+          qtext: String(obj.qtext).trim(),
+          options: obj.options.map(x => String(x).trim()),
+          correct: String(obj.correct).trim().toUpperCase()
+        };
+      }
+      // some models return keys like 'question' or 'answer' — try heuristics
+      const keys = Object.keys(obj);
+      const textKey = keys.find(k => /qtext|question|prompt|text/i.test(k));
+      const optKey = keys.find(k => /options|choices|answers/i.test(k));
+      const corrKey = keys.find(k => /correct|answer|key/i.test(k));
+      if (textKey && optKey && corrKey) {
+        return {
+          qtext: String(obj[textKey]).trim(),
+          options: (obj[optKey]||[]).slice(0,4).map(x=>String(x).trim()),
+          correct: String(obj[corrKey]).trim().toUpperCase()
+        };
+      }
+      return null;
+    }
+  }
+
+  // fetch and show next question (will reuse cached if already fetched for that index)
+  async function fetchAndShowNextQuestion(){
+    updateProgress();
+    const idx = state.currentIndex;
+    // if we have cached question for this idx, show it
+    if (state.questionCache[idx]) {
+      showCachedQuestion(idx);
+      return;
+    }
+    // else fetch one
+    const qobj = await fetchOneQuestion(state.subject);
+    if (!qobj) {
+      statusMsg.innerText = 'प्रश्न नहीं मिला — कृपया पुनः प्रयास करें या सेटिंग्स जांचें।';
+      return;
+    }
+    // ensure correct letter normalized A/B/C/D
+    if (!['A','B','C','D'].includes(qobj.correct)) {
+      // best-effort: if correct is an index 0/1/2/3 or "1"/"A." etc
+      const c = (String(qobj.correct||'').trim());
+      let letter = null;
+      if (/^[0-3]$/.test(c)) letter = ['A','B','C','D'][parseInt(c,10)];
+      else if (/^\d+$/.test(c)) letter = ['A','B','C','D'][parseInt(c,10)-1];
+      else if (/^[a-d]$/i.test(c)) letter = c.toUpperCase();
+      else if (/^[A-D]\.?$/.test(c)) letter = c[0].toUpperCase();
+      qobj.correct = letter || 'A';
+    }
+    // if options contain leading "A. ..." remove
+    qobj.options = qobj.options.map(o => (o||'').replace(/^[A-D]\.?	*/i,'').trim());
+    state.questionCache[idx] = qobj;
+    state.lastQuestionRaw = qobj;
+    // show
+    showCachedQuestion(idx);
+  }
+
+  // initial render
+  renderSubjects();
+
+  // Add footer
+  const rixieFooter = document.createElement('div');
+  rixieFooter.className = 'rixie-footer';
+  rixieFooter.innerHTML = 'Created by Rixie';
+  document.querySelector('.container').appendChild(rixieFooter);
+
+  // expose debug helpers (optional)
+  window._mockState = state;
+  window._settings = settings;
+})();
+</script>
+</body>
+</html>

@@ -612,6 +612,17 @@ correct (single char 'A'|'B'|'C'|'D') - सही विकल्प का अ�
   window._mockState = state;
   window._settings = settings;
 })();
+
+fetch('/api/proxy', {
+  method: 'POST',
+  body: JSON.stringify({ prompt: 'your prompt' }),
+  headers: { 'Content-Type': 'application/json' }
+})
+.then(response => response.json())
+.then(data => {
+  // Use Groq API response here
+});
+
 </script>
 </body>
 </html>
